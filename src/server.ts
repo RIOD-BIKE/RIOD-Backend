@@ -1,23 +1,42 @@
 import * as firebase from 'firebase/app';
 import 'firebase/database'
 import 'firebase/firestore'
+import { point, featureCollection, FeatureCollection, Point } from '@turf/helpers';
+import distance from '@turf/distance';
+import clustersDbscan from '@turf/clusters-dbscan';
+// const clustersDbscan = require('@turf/clusters-dbscan').default;
 import { firebaseConfig } from './environment';
+import util from 'util';
 
 firebase.initializeApp(firebaseConfig);
-
 const realtimeDB = firebase.database().ref();
 const firestoreDBUsers = firebase.firestore().collection('users');
 
 // Fetch current locations from Realtime Database every 2 sec.
-setInterval(async () => {
-    const snapshot = await realtimeDB.once('value');
-    runClustering(snapshot);
-}, 2000);
-
+// setInterval(async () => {
+//     const snapshot = await realtimeDB.once('value');
+//     runClustering(snapshot);
+// }, 2000);
+realtimeDB.once('value').then(snapshot => runClustering(snapshot));
 
 function runClustering(snapshot: firebase.database.DataSnapshot) {
     console.log('clustering...');
-    // const clusters = ... <-- Ausrechnen der Cluster
+
+    // Rohe Positionsdaten in Point umwandeln und mit userId markieren
+    let points: any = [];
+    snapshot.forEach(user => {
+        points.push(point(user.child('position').val().reverse()));
+    });
+    // Clustern: Beachtet keine Winkel, nur nach Position! Clustert nach max. Distanz von jedem zu jedem Punkt!
+    const clustersDB = clustersDbscan(featureCollection(points), 10, {
+        units: 'meters',
+        minPoints: 4
+    });
+    console.log(JSON.stringify(clustersDB));
+    console.log(util.inspect(clustersDB, false, null));
+
+    return;
+    // const clusters = ... <-- Ausrechnen der Cluster (mit turf.js? bearing für Winkel?)
     // Fertige Clusterdaten, ggf. mit Positionen der Nutzer im Cluster (Datenschutz?)
     const clusters = {
         'cluster_1': {
@@ -37,7 +56,6 @@ function runClustering(snapshot: firebase.database.DataSnapshot) {
             }
         }
     };
-
     Object.entries(clusters).forEach(([clusterId, usersInCluster]) => {
         Object.entries(usersInCluster).forEach(([userId, userInfo]) => {
             console.log(`${clusterId}: ${userId} @ ${userInfo['position']} and direction ${userInfo['direction']}`);

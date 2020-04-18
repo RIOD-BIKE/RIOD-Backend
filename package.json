@@ -17,6 +17,10 @@
   },
   "homepage": "https://github.com/RIOD-BIKE/RIOD-Backend#readme",
   "dependencies": {
+    "@turf/clusters-dbscan": "^6.2.0-alpha.1",
+    "@turf/distance": "^6.2.0-alpha.1",
+    "@turf/helpers": "^6.2.0-alpha.1",
+    "@types/node": "^13.13.0",
     "firebase": "^7.14.1"
   }
 }

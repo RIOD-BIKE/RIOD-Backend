@@ -1,0 +1,26 @@
+{
+  "user_1" : {
+    "direction" : 0,
+    "position" : [ 52.284209, 8.022949 ]
+  },
+  "user_2" : {
+    "direction" : 0,
+    "position" : [ 52.284245, 8.02296 ]
+  },
+  "user_3" : {
+    "direction" : 0,
+    "position" : [ 52.284284, 8.022968 ]
+  },
+  "user_4" : {
+    "direction" : 0,
+    "position" : [ 52.284325, 8.022973 ]
+  },
+  "user_5" : {
+    "direction" : 0,
+    "position" : [ 52.284365, 8.022982 ]
+  },
+  "user_6" : {
+    "direction" : 0,
+    "position" : [ 52.284569, 8.023030 ]
+  }
+}
