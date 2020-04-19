@@ -20,7 +20,14 @@
     "@turf/clusters-dbscan": "^6.2.0-alpha.1",
     "@turf/distance": "^6.2.0-alpha.1",
     "@turf/helpers": "^6.2.0-alpha.1",
+    "@turf/meta": "^6.2.0-alpha.1",
+    "@types/geokdbush": "^1.1.2",
+    "@types/kdbush": "^3.0.0",
     "@types/node": "^13.13.0",
-    "firebase": "^7.14.1"
+    "firebase": "^7.14.1",
+    "geokdbush": "^1.1.0",
+    "kdbush": "^3.0.0"
+  }, "devDependencies": {
+    "all-the-cities": "^3.1.0"
   }
 }

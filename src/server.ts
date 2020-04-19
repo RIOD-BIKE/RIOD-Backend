@@ -1,12 +1,11 @@
 import * as firebase from 'firebase/app';
 import 'firebase/database'
 import 'firebase/firestore'
-import { point, featureCollection, FeatureCollection, Point } from '@turf/helpers';
-import distance from '@turf/distance';
+import { point, featureCollection } from '@turf/helpers';
 import clustersDbscan from '@turf/clusters-dbscan';
-// const clustersDbscan = require('@turf/clusters-dbscan').default;
 import { firebaseConfig } from './environment';
 import util from 'util';
+import { DBSCAN } from './dbscan/dbscan';
 
 firebase.initializeApp(firebaseConfig);
 const realtimeDB = firebase.database().ref();
@@ -27,16 +26,19 @@ function runClustering(snapshot: firebase.database.DataSnapshot) {
     snapshot.forEach(user => {
         points.push(point(user.child('position').val().reverse()));
     });
+    points = featureCollection(points);
     // Clustern: Beachtet keine Winkel, nur nach Position! Clustert nach max. Distanz von jedem zu jedem Punkt!
-    const clustersDB = clustersDbscan(featureCollection(points), 10, {
+    const clustersDB = clustersDbscan(points, 5, {
         units: 'meters',
-        minPoints: 4
+        minPoints: 3
     });
-    console.log(JSON.stringify(clustersDB));
+    const dbscan = new DBSCAN(points, 5, 3);
+    console.log(util.inspect(dbscan.run(), false, null));
+    // console.log(JSON.stringify(clustersDB));
     console.log(util.inspect(clustersDB, false, null));
 
     return;
-    // const clusters = ... <-- Ausrechnen der Cluster (mit turf.js? bearing für Winkel?)
+    // TODO: cluster von dbscan.run() verarbeiten (in Firestore speichern)
     // Fertige Clusterdaten, ggf. mit Positionen der Nutzer im Cluster (Datenschutz?)
     const clusters = {
         'cluster_1': {
