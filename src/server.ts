@@ -1,7 +1,7 @@
 import * as firebase from 'firebase/app';
 import 'firebase/database'
 import 'firebase/firestore'
-import { point, featureCollection } from '@turf/helpers';
+import { point, featureCollection, FeatureCollection, Point } from '@turf/helpers';
 import clustersDbscan from '@turf/clusters-dbscan';
 import { firebaseConfig } from './environment';
 import util from 'util';
@@ -22,20 +22,23 @@ function runClustering(snapshot: firebase.database.DataSnapshot) {
     console.log('clustering...');
 
     // Rohe Positionsdaten in Point umwandeln und mit userId markieren
-    let points: any = [];
+    const points: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
     snapshot.forEach(user => {
-        points.push(point(user.child('position').val().reverse()));
+        points.features.push(point(user.child('position').val().reverse(), { 
+            'userId': user.key,
+            'direction': user.child('direction').val()
+        }));
     });
-    points = featureCollection(points);
     // Clustern: Beachtet keine Winkel, nur nach Position! Clustert nach max. Distanz von jedem zu jedem Punkt!
     const clustersDB = clustersDbscan(points, 5, {
         units: 'meters',
         minPoints: 3
     });
     const dbscan = new DBSCAN(points, 5, 3);
-    console.log(util.inspect(dbscan.run(), false, null));
+    dbscan.run();
+    // console.log(util.inspect(dbscan.run(), false, null));
     // console.log(JSON.stringify(clustersDB));
-    console.log(util.inspect(clustersDB, false, null));
+    // console.log(util.inspect(clustersDB, false, null));
 
     return;
     // TODO: cluster von dbscan.run() verarbeiten (in Firestore speichern)
