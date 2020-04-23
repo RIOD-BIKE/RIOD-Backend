@@ -26,33 +26,33 @@ export class DBSCAN {
     public run() {
         this.index = new KDBush(this.points.features, (f) => f.geometry.coordinates[0], (f) => f.geometry.coordinates[1]);
 
-        featureEach(this.points, (p, pIdx) => {
-            if (p.properties!['dbscan'] != null) return;
+        for (const p of this.points.features) {
+            if (p.properties!['dbscan'] != null) continue;
 
             const neigbors = this.RangeQuery(p);
             if (neigbors.features.length < this.minPts) {
                 this.label(p, PointType.noise);
-                return;
+                continue;
             }
             this.clusterIdx++;
             this.label(p, PointType.core);
+
             const index = neigbors.features.indexOf(p);
             neigbors.features.splice(index, 1);
-            featureEach(neigbors, (q, qIdx) => {
+            for (const q of neigbors.features) {
                 if (q.properties!['dbscan'] == PointType.noise) {
                     this.label(q, PointType.core);
                 }
-                if (q.properties!['dbscan'] != null) return;
+                if (q.properties!['dbscan'] != null) continue;
                 this.label(q, PointType.core);
                 const neigborsExpand = this.RangeQuery(q as Feature<Point>);
                 if (neigborsExpand.features.length >= this.minPts) {
-                    featureEach(neigborsExpand, (n, nIdx) => {
+                    for (const n of neigborsExpand.features) {
                         neigbors.features.push(n);
-                        return;
-                    });
+                    };
                 }
-            });
-        });
+            }
+        }
         return this.points;
     }
 
