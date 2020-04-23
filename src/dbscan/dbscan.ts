@@ -23,7 +23,6 @@ export class DBSCAN {
     }
 
     // see: https://en.wikipedia.org/wiki/DBSCAN
-    // TODO: es werden 3 geclustert, wenn minPts = 4!
     public run() {
         this.index = new KDBush(this.points.features, (f) => f.geometry.coordinates[0], (f) => f.geometry.coordinates[1]);
 
@@ -31,7 +30,7 @@ export class DBSCAN {
             if (p.properties!['dbscan'] != null) return;
 
             const neigbors = this.RangeQuery(p);
-            if (neigbors.features.length + 1 < this.minPts) {
+            if (neigbors.features.length < this.minPts) {
                 this.label(p, PointType.noise);
                 return;
             }
@@ -46,7 +45,7 @@ export class DBSCAN {
                 if (q.properties!['dbscan'] != null) return;
                 this.label(q, PointType.core);
                 const neigborsExpand = this.RangeQuery(q as Feature<Point>);
-                if (neigborsExpand.features.length + 1 >= this.minPts) {
+                if (neigborsExpand.features.length >= this.minPts) {
                     featureEach(neigborsExpand, (n, nIdx) => {
                         neigbors.features.push(n);
                         return;

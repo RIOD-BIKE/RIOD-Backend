@@ -36,24 +36,29 @@ test('cluster with too large radius (eps)', t => {
 });
 
 test('cluster with direction', t => {
-    const dbscan = new DBSCAN(getDemoPointsWithDirection(), 5, 4);
+    const dbscan = new DBSCAN(getDemoPointsWithDirection(), 10, 4);
     const clusters = dbscan.run();
-    console.log(util.inspect(clusters, false, null));
     clusters.features.forEach((feature, idx) => {
         if (idx < 4) {
             t.is(feature.properties!['cluster'], 1);
             t.is(feature.properties!['dbscan'], 0);
         } else if (idx < 7) {
-            t.is(feature.properties!['cluster'], 2);
-            t.is(feature.properties!['dbscan'], 0);
-        } else {
             t.is(feature.properties!['cluster'], undefined);
             t.is(feature.properties!['dbscan'], 1);
         }
     });
 });
 
-test('cluster with direction, smaller cluster size', t => {
+test('cluster with direction (range too small)', t => {
+    const dbscan = new DBSCAN(getDemoPointsWithDirection(), 5, 4);
+    const clusters = dbscan.run();
+    clusters.features.forEach((feature, idx) => {
+            t.is(feature.properties!['cluster'], undefined);
+            t.is(feature.properties!['dbscan'], 1);
+    });
+});
+
+test('cluster with direction (smaller cluster size)', t => {
     const dbscan = new DBSCAN(getDemoPointsWithDirection(), 5, 3);
     const clusters = dbscan.run();
     clusters.features.forEach((feature, idx) => {
