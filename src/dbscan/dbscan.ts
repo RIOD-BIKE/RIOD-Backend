@@ -4,7 +4,7 @@ import KDBush from 'kdbush';
 import { around } from 'geokdbush';
 import util from 'util';
 
-enum PointType {
+export enum PointType {
     core,
     noise
 }
