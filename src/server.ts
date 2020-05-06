@@ -6,6 +6,7 @@ import clustersDbscan from '@turf/clusters-dbscan';
 import { firebaseConfig } from './environment';
 import util from 'util';
 import { DBSCAN, PointType } from './dbscan/dbscan';
+import { strict } from 'assert';
 
 firebase.initializeApp(firebaseConfig);
 const realtimeDB = firebase.database().ref();
@@ -40,7 +41,7 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
             firestoreDBUsers.doc(userId).set({
                 'cluster': {
                     'id': clusterId,
-                    // 'size': Object.entries(usersInCluster).length
+                    'size': clusters.clusterSizes[clusterId]
                 }
             });
         } else {

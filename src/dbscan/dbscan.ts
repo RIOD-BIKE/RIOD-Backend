@@ -1,5 +1,4 @@
 import { FeatureCollection, Point, featureCollection, Feature, feature } from '@turf/helpers';
-import { featureEach } from '@turf/meta';
 import KDBush from 'kdbush';
 import { around } from 'geokdbush';
 import util from 'util';
@@ -9,15 +8,20 @@ export enum PointType {
     noise
 }
 
+interface Cluster extends FeatureCollection<Point> {
+    clusterSizes: {[id: number]: number};
+}
+
 export class DBSCAN {
-    private points: FeatureCollection<Point>;
+    private points: Cluster;
     private index: any;
     private eps: number;
     private minPts: number;
     private clusterIdx = 0;
 
     constructor(points: FeatureCollection<Point>, eps: number, minPts: number) {
-        this.points = points;
+        this.points = points as Cluster;
+        this.points.clusterSizes = {};
         this.eps = eps;
         this.minPts = minPts;
     }
@@ -63,7 +67,10 @@ export class DBSCAN {
 
     private label(p: Feature, type: PointType) {
         p.properties!['dbscan'] = type;
-        if (type == PointType.core) p.properties!['cluster'] = this.clusterIdx;
+        if (type === PointType.core) {
+            p.properties!['cluster'] = this.clusterIdx;
+            this.points.clusterSizes[this.clusterIdx] ? this.points.clusterSizes[this.clusterIdx]++ : this.points.clusterSizes[this.clusterIdx] = 1;
+        }
     }
 
     private filterDirections(p: Feature, neigbors: FeatureCollection) {
