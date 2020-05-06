@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava --verbose"
   },
   "repository": {
     "type": "git",
@@ -23,9 +23,9 @@
     "@turf/meta": "^6.2.0-alpha.1",
     "@types/geokdbush": "^1.1.2",
     "@types/kdbush": "^3.0.0",
-    "@types/node": "^13.13.0",
-    "ava": "^3.7.1",
-    "firebase": "^7.14.1",
+    "@types/node": "^13.13.5",
+    "ava": "^3.8.1",
+    "firebase": "^7.14.2",
     "geokdbush": "^1.1.0",
     "kdbush": "^3.0.0"
   },
