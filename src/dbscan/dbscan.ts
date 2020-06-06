@@ -1,4 +1,4 @@
-import { FeatureCollection, Point, featureCollection, Feature, feature } from '@turf/helpers';
+import { FeatureCollection, Point, featureCollection, Feature, feature, Position } from '@turf/helpers';
 import KDBush from 'kdbush';
 import { around } from 'geokdbush';
 import util from 'util';
@@ -8,20 +8,24 @@ export enum PointType {
     noise
 }
 
-interface Cluster extends FeatureCollection<Point> {
-    clusterSizes: {[id: number]: number};
+class Cluster {
+    // clusterSizes: {[id: number]: number};
+    // clusterLocations: {[id: number]: Position};
+    // clusterLocations: Map<number, Position>;
+    position: Position = [0, 0];
+    size = 0;
 }
 
 export class DBSCAN {
-    private points: Cluster;
+    private points: FeatureCollection<Point>;
     private index: any;
     private eps: number;
     private minPts: number;
     private clusterIdx = 0;
+    private clusters = new Map<number, Cluster>();
 
     constructor(points: FeatureCollection<Point>, eps: number, minPts: number) {
-        this.points = points as Cluster;
-        this.points.clusterSizes = {};
+        this.points = points;
         this.eps = eps;
         this.minPts = minPts;
     }
@@ -45,10 +49,10 @@ export class DBSCAN {
             neigbors.features.splice(index, 1);
             for (const q of neigbors.features) {
                 if (q.properties!['dbscan'] == PointType.noise) {
-                    this.label(q, PointType.core);
+                    this.label(q as Feature<Point>, PointType.core);
                 }
                 if (q.properties!['dbscan'] != null) continue;
-                this.label(q, PointType.core);
+                this.label(q as Feature<Point>, PointType.core);
                 const neigborsExpand = this.RangeQuery(q as Feature<Point>);
                 if (neigborsExpand.features.length >= this.minPts) {
                     for (const n of neigborsExpand.features) {
@@ -65,11 +69,15 @@ export class DBSCAN {
         return this.filterDirections(q, featureCollection(neigbors));
     }
 
-    private label(p: Feature, type: PointType) {
+    private label(p: Feature<Point>, type: PointType) {
         p.properties!['dbscan'] = type;
         if (type === PointType.core) {
             p.properties!['cluster'] = this.clusterIdx;
-            this.points.clusterSizes[this.clusterIdx] ? this.points.clusterSizes[this.clusterIdx]++ : this.points.clusterSizes[this.clusterIdx] = 1;
+            if(!this.clusters.has(this.clusterIdx)) {
+                this.clusters.set(this.clusterIdx, new Cluster());
+            }
+            this.clusters.get(this.clusterIdx)!.size++;
+            this.clusters.get(this.clusterIdx)!.position = p.geometry.coordinates;
         }
     }
 
@@ -78,5 +86,9 @@ export class DBSCAN {
             const bearing = (f.properties!['direction'] - p.properties!['direction'] + 180) % 360 - 180;
             return bearing < 45 && bearing > - 45;
         }));
+    }
+
+    public getClusters() {
+        return this.clusters;
     }
 }
