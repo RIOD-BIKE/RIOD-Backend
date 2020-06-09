@@ -5,7 +5,7 @@ import { point, featureCollection, FeatureCollection, Point } from '@turf/helper
 import clustersDbscan from '@turf/clusters-dbscan';
 import { firebaseConfig } from './environment';
 import util from 'util';
-import { DBSCAN, PointType } from './dbscan/dbscan';
+import { DBSCAN, PointType, Cluster } from './dbscan/dbscan';
 import { strict } from 'assert';
 import { distance } from 'geokdbush';
 
@@ -27,12 +27,12 @@ firestoreDBAssemblyPoints.get().then(snapshot => {
     snapshot.forEach(doc => {
         assemblyPoints.set(doc.id, doc.data() as { name: string, coordinates: [number, number] });
     });
-    realtimeDB.once('value').then(snapshot => runClustering(snapshot));
+    setInterval(() => {
+        realtimeDB.once('value').then(snapshot => runClustering(snapshot));
+    }, 2000);
 });
 
 async function runClustering(snapshot: firebase.database.DataSnapshot) {
-    console.log('clustering...');
-
     const points: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
     const users = snapshot.child('users');
     users.forEach(user => {
@@ -69,5 +69,14 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
             'clusters': nearbyClusters,
             'assemblyPoints': nearbyAssemblyPoints
         });
+    }
+    printOutput(clusters);
+}
+
+async function printOutput(clusters: Map<number, Cluster>) {
+    process.stdout.write('\x1Bc');
+    console.log('=== CLUSTERING ===');
+    for(const [idx, cluster] of clusters) {
+        console.log(`C #${idx} @ [${cluster.position[0]}, ${cluster.position[1]}]: ${cluster.size} Cyclists`);
     }
 }

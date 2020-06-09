@@ -8,8 +8,8 @@ export enum PointType {
     noise
 }
 
-class Cluster {
-    // clusterSizes: {[id: number]: number};
+export class Cluster {
+    // clusterSizes: [id: number]: number};
     // clusterLocations: {[id: number]: Position};
     // clusterLocations: Map<number, Position>;
     position: Position = [0, 0];
