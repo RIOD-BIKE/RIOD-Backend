@@ -1,3 +1,4 @@
+import { FirestoreCache } from './FirestoreCache';
 import * as firebase from 'firebase/app';
 import 'firebase/database'
 import 'firebase/firestore'
@@ -8,12 +9,14 @@ import util from 'util';
 import { DBSCAN, PointType, Cluster } from './dbscan/dbscan';
 import { strict } from 'assert';
 import { distance } from 'geokdbush';
+import { User } from './models/User';
 
 firebase.initializeApp(firebaseConfig);
 const realtimeDB = firebase.database().ref();
-const firestoreDBUsers = firebase.firestore().collection('users');
+// const firestoreDBUsers = firebase.firestore().collection('users');
 const firestoreDBClusters = firebase.firestore().collection('clusters');
 const firestoreDBAssemblyPoints = firebase.firestore().collection('assemblypoints');
+const firestoreCache = new FirestoreCache();
 
 // Fetch current locations from Realtime Database every 2 sec.
 // setInterval(async () => {
@@ -53,7 +56,7 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
         });
     }
     for (const cyclist of cyclists.features) {
-        const userId = cyclist.properties?.['userId'];
+        const userId = cyclist.properties?.['userId'] as string;
         const activeCluster = (cyclist.properties?.['dbscan'] === PointType.core) ? firestoreDBClusters.doc(cyclist.properties?.['cluster'].toString()) : null;
 
         // Update nearby Clusters and Assembly Points (currently in 5 km radius)
@@ -64,11 +67,8 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
             .filter(([aIdx, a]) => distance(a.coordinates[0], a.coordinates[1], cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
             .map(a => firestoreDBAssemblyPoints.doc(a[0].toString()));
 
-        firestoreDBUsers.doc(userId).update({
-            'activeCluster': activeCluster,
-            'clusters': nearbyClusters,
-            'assemblyPoints': nearbyAssemblyPoints
-        });
+        const user = new User(userId, activeCluster, nearbyClusters, nearbyAssemblyPoints);
+        firestoreCache.write(user);
     }
     printOutput(clusters);
 }
