@@ -1,35 +1,62 @@
+import { Cluster } from './models/Cluster';
 import { User } from './models/User';
 import Tree from 'splaytree';
 import firebase from 'firebase';
 
 export class FirestoreCache {
     private users: Tree<string, User>;
-    private firestoreDBUsers = firebase.firestore().collection('users');
+    private clusters: Tree<string, Cluster>;
+    private firestoreUsers = firebase.firestore().collection('users');
+    private firestoreClusters = firebase.firestore().collection('clusters');
 
     constructor() {
         this.users = new Tree();
+        this.clusters = new Tree();
     }
 
-    public write(newUser: User) {
+    public writeUser(newUser: User) {
         if (!this.users.contains(newUser.userId)) {
             this.users.add(newUser.userId, newUser);
-            this.writeToFirestore(newUser);
+            this.writeUserToFirestore(newUser);
             return true;
         }
         const oldUser = this.users.find(newUser.userId)!.data as User;
         if (oldUser.equals(newUser)) return false;
-        this.writeToFirestore(newUser);
+        this.writeUserToFirestore(newUser);
         this.users.remove(newUser.userId);
         this.users.add(newUser.userId, newUser);
         return true;
     }
 
-    private writeToFirestore(user: User) {
+    public writeCluster(newCluster: Cluster) {
+        if (!this.clusters.contains(newCluster.clusterId)) {
+            this.clusters.add(newCluster.clusterId, newCluster);
+            this.writeClusterToFirestore(newCluster);
+            return true;
+        }
+        const oldCluster = this.clusters.find(newCluster.clusterId)!.data as Cluster;
+        if (oldCluster.equals(newCluster)) return false;
+        this.writeClusterToFirestore(newCluster);
+        this.clusters.remove(newCluster.clusterId);
+        this.clusters.add(newCluster.clusterId, newCluster);
+        return true;
+    }
+
+
+    private writeUserToFirestore(user: User) {
         // TODO: add await to prevent heap overflow?
-        this.firestoreDBUsers.doc(user.userId).update({
+        this.firestoreUsers.doc(user.userId).update({
             'activeCluster': user.activeCluster,
             'clusters': user.clusters,
             'assemblyPoints': user.assemblyPoints
+        });
+    }
+
+    private writeClusterToFirestore(cluster: Cluster) {
+        // TODO: add await to prevent heap overflow?
+        this.firestoreClusters.doc(cluster.clusterId).set({
+            'coordinates': cluster.position,
+            'count': cluster.count
         });
     }
 }

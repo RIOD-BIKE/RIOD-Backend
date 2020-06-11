@@ -4,11 +4,17 @@ export class Cluster {
         latitude: number,
         longitude: number
     };
-    size = 0;
+    count = 0;
 
     constructor(clusterId: string, position: { latitude: number, longitude: number }, size: number) {
         this.clusterId = clusterId;
         this.position = position;
-        this.size = size;
+        this.count = size;
+    }
+
+    public equals(otherCluster: Cluster) {
+        return this.position.latitude === otherCluster.position.latitude
+            && this.position.longitude === otherCluster.position.longitude
+            && this.count === otherCluster.count;
     }
 }

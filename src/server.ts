@@ -12,7 +12,6 @@ import { User } from './models/User';
 
 firebase.initializeApp(firebaseConfig);
 const realtimeDB = firebase.database().ref();
-// const firestoreDBUsers = firebase.firestore().collection('users');
 const firestoreDBClusters = firebase.firestore().collection('clusters');
 const firestoreDBAssemblyPoints = firebase.firestore().collection('assemblypoints');
 const firestoreCache = new FirestoreCache();
@@ -43,10 +42,7 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
     // console.log(util.inspect(cyclists, false, null));
 
     for (const [cIdx, c] of clusters) {
-        await firestoreDBClusters.doc(cIdx.toString()).set({
-            'coordinates': c.position,
-            'count': c.size
-        });
+        firestoreCache.writeCluster(c);
     }
     for (const cyclist of cyclists.features) {
         const userId = cyclist.properties?.['userId'] as string;
@@ -61,7 +57,7 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
             .map(a => firestoreDBAssemblyPoints.doc(a[0].toString()));
 
         const user = new User(userId, activeCluster, nearbyClusters, nearbyAssemblyPoints);
-        firestoreCache.write(user);
+        firestoreCache.writeUser(user);
     }
     printOutput(clusters);
 }
@@ -70,6 +66,6 @@ async function printOutput(clusters: Map<number, Cluster>) {
     process.stdout.write('\x1Bc');
     console.log('=== CLUSTERING ===');
     for(const [idx, cluster] of clusters) {
-        console.log(`C #${idx} @ [${cluster.position.latitude}, ${cluster.position.longitude}]: ${cluster.size} Cyclists`);
+        console.log(`C #${idx} @ [${cluster.position.latitude}, ${cluster.position.longitude}]: ${cluster.count} Cyclists`);
     }
 }

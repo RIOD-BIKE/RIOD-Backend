@@ -72,7 +72,7 @@ export class DBSCAN {
                     longitude: p.geometry.coordinates[1]
                 }, 1));
             }
-            this.clusters.get(this.clusterIdx)!.size++;
+            this.clusters.get(this.clusterIdx)!.count++;
         }
     }
 
