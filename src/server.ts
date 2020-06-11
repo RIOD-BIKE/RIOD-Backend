@@ -1,13 +1,12 @@
+import { Cluster } from './models/Cluster';
 import { FirestoreCache } from './FirestoreCache';
 import * as firebase from 'firebase/app';
 import 'firebase/database'
 import 'firebase/firestore'
-import { point, featureCollection, FeatureCollection, Point } from '@turf/helpers';
-import clustersDbscan from '@turf/clusters-dbscan';
+import { point, FeatureCollection, Point } from '@turf/helpers';
 import { firebaseConfig } from './environment';
 import util from 'util';
-import { DBSCAN, PointType, Cluster } from './dbscan/dbscan';
-import { strict } from 'assert';
+import { DBSCAN, PointType } from './dbscan/dbscan';
 import { distance } from 'geokdbush';
 import { User } from './models/User';
 
@@ -18,14 +17,8 @@ const firestoreDBClusters = firebase.firestore().collection('clusters');
 const firestoreDBAssemblyPoints = firebase.firestore().collection('assemblypoints');
 const firestoreCache = new FirestoreCache();
 
-// Fetch current locations from Realtime Database every 2 sec.
-// setInterval(async () => {
-//     const snapshot = await realtimeDB.once('value');
-//     runClustering(snapshot);
-// }, 2000);
-// fjykF6qGV9PQMYHJSb9BP5QwfsI2: 52.271876 8.037869
-
 const assemblyPoints = new Map<String, { name: string, coordinates: [number, number] }>();
+// Fetch current locations from Realtime Database every 2 sec.
 firestoreDBAssemblyPoints.get().then(snapshot => {
     snapshot.forEach(doc => {
         assemblyPoints.set(doc.id, doc.data() as { name: string, coordinates: [number, number] });
@@ -61,7 +54,7 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
 
         // Update nearby Clusters and Assembly Points (currently in 5 km radius)
         const nearbyClusters = [...clusters]
-            .filter(([cIdx, c]) => distance(c.position[0], c.position[1], cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
+            .filter(([cIdx, c]) => distance(c.position.latitude, c.position.longitude, cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
             .map(c => firestoreDBClusters.doc(c[0].toString()));
         const nearbyAssemblyPoints = [...assemblyPoints]
             .filter(([aIdx, a]) => distance(a.coordinates[0], a.coordinates[1], cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
@@ -77,6 +70,6 @@ async function printOutput(clusters: Map<number, Cluster>) {
     process.stdout.write('\x1Bc');
     console.log('=== CLUSTERING ===');
     for(const [idx, cluster] of clusters) {
-        console.log(`C #${idx} @ [${cluster.position[0]}, ${cluster.position[1]}]: ${cluster.size} Cyclists`);
+        console.log(`C #${idx} @ [${cluster.position.latitude}, ${cluster.position.longitude}]: ${cluster.size} Cyclists`);
     }
 }

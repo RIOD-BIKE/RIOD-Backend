@@ -2,18 +2,11 @@ import { FeatureCollection, Point, featureCollection, Feature, feature, Position
 import KDBush from 'kdbush';
 import { around } from 'geokdbush';
 import util from 'util';
+import { Cluster } from '../models/Cluster';
 
 export enum PointType {
     core,
     noise
-}
-
-export class Cluster {
-    // clusterSizes: [id: number]: number};
-    // clusterLocations: {[id: number]: Position};
-    // clusterLocations: Map<number, Position>;
-    position: Position = [0, 0];
-    size = 0;
 }
 
 export class DBSCAN {
@@ -74,10 +67,12 @@ export class DBSCAN {
         if (type === PointType.core) {
             p.properties!['cluster'] = this.clusterIdx;
             if(!this.clusters.has(this.clusterIdx)) {
-                this.clusters.set(this.clusterIdx, new Cluster());
+                this.clusters.set(this.clusterIdx, new Cluster(this.clusterIdx.toString(), {
+                    latitude: p.geometry.coordinates[0],
+                    longitude: p.geometry.coordinates[1]
+                }, 1));
             }
             this.clusters.get(this.clusterIdx)!.size++;
-            this.clusters.get(this.clusterIdx)!.position = p.geometry.coordinates;
         }
     }
 
