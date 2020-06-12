@@ -16,10 +16,10 @@ export class User {
     public equals(otherUser: User) {
         const activeClusterEqual = this.activeCluster?.path === otherUser.activeCluster?.path;
         const clustersEqual = (this.clusters.length === 0 && otherUser.clusters.length === 0) ||
-            (this.clusters.length === otherUser.clusters.length) && this.assemblyPoints.every((ref, idx) => ref.path === otherUser.assemblyPoints[idx].path);
+            (this.clusters.length === otherUser.clusters.length) && this.assemblyPoints.every((ref, idx) => ref.path === otherUser.assemblyPoints[idx]?.path);
 
         const assemblyPointsEqual = (this.clusters.length === 0 && otherUser.clusters.length === 0) ||
-            (this.clusters.length === otherUser.clusters.length) && this.assemblyPoints.every((ref, idx) => ref.path === otherUser.assemblyPoints[idx].path);
+            (this.clusters.length === otherUser.clusters.length) && this.assemblyPoints.every((ref, idx) => ref.path === otherUser.assemblyPoints[idx]?.path);
 
         return activeClusterEqual && clustersEqual && assemblyPointsEqual;
     }

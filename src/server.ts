@@ -39,10 +39,13 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
     const dbscan = new DBSCAN(points, 5, 3);
     const cyclists = dbscan.run();
     const clusters = dbscan.getClusters();
+    let writesCluster = 0;
+    let writesUser = 0;
+
     // console.log(util.inspect(cyclists, false, null));
 
     for (const [cIdx, c] of clusters) {
-        firestoreCache.writeCluster(c);
+        if(firestoreCache.writeCluster(c)) writesCluster++;
     }
     for (const cyclist of cyclists.features) {
         const userId = cyclist.properties?.['userId'] as string;
@@ -57,15 +60,17 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
             .map(a => firestoreDBAssemblyPoints.doc(a[0].toString()));
 
         const user = new User(userId, activeCluster, nearbyClusters, nearbyAssemblyPoints);
-        firestoreCache.writeUser(user);
+        if(firestoreCache.writeUser(user)) writesUser++;
     }
-    printOutput(clusters);
+    printOutput(clusters, writesCluster, writesUser);
 }
 
-async function printOutput(clusters: Map<number, Cluster>) {
+async function printOutput(clusters: Map<number, Cluster>, writesCluster: number, writesUser: number, ) {
+    // TODO: replace console.log with logging-framework
     process.stdout.write('\x1Bc');
-    console.log('=== CLUSTERING ===');
+    console.log(`=== CLUSTERING ${ (new Date).toISOString() } ===`);
     for(const [idx, cluster] of clusters) {
         console.log(`C #${idx} @ [${cluster.position.latitude}, ${cluster.position.longitude}]: ${cluster.count} Cyclists`);
     }
+    console.log(`wrote to ${writesCluster} Clusters and ${writesUser} Users`);
 }

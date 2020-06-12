@@ -15,6 +15,7 @@ export class FirestoreCache {
     }
 
     public writeUser(newUser: User) {
+        // TODO: First-run check?
         if (!this.users.contains(newUser.userId)) {
             this.users.add(newUser.userId, newUser);
             this.writeUserToFirestore(newUser);
@@ -29,6 +30,7 @@ export class FirestoreCache {
     }
 
     public writeCluster(newCluster: Cluster) {
+        // TODO: First-run check?
         if (!this.clusters.contains(newCluster.clusterId)) {
             this.clusters.add(newCluster.clusterId, newCluster);
             this.writeClusterToFirestore(newCluster);
