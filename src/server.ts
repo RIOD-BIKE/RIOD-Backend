@@ -16,11 +16,11 @@ const firestoreDBClusters = firebase.firestore().collection('clusters');
 const firestoreDBAssemblyPoints = firebase.firestore().collection('assemblypoints');
 const firestoreCache = new FirestoreCache();
 
-const assemblyPoints = new Map<String, { name: string, coordinates: [number, number] }>();
+const assemblyPoints = new Map<String, { name: string, coordinates: { latitude: number, longitude: number} }>();
 // Fetch current locations from Realtime Database every 2 sec.
 firestoreDBAssemblyPoints.get().then(snapshot => {
     snapshot.forEach(doc => {
-        assemblyPoints.set(doc.id, doc.data() as { name: string, coordinates: [number, number] });
+        assemblyPoints.set(doc.id, doc.data() as { name: string, coordinates: { latitude: number, longitude: number} });
     });
     setInterval(() => {
         realtimeDB.once('value').then(snapshot => runClustering(snapshot));
@@ -56,7 +56,7 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
             .filter(([cIdx, c]) => distance(c.position.latitude, c.position.longitude, cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
             .map(c => firestoreDBClusters.doc(c[0].toString()));
         const nearbyAssemblyPoints = [...assemblyPoints]
-            .filter(([aIdx, a]) => distance(a.coordinates[0], a.coordinates[1], cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
+            .filter(([aIdx, a]) => distance(a.coordinates.latitude, a.coordinates.longitude, cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
             .map(a => firestoreDBAssemblyPoints.doc(a[0].toString()));
 
         const user = new User(userId, activeCluster, nearbyClusters, nearbyAssemblyPoints);
