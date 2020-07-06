@@ -16,12 +16,24 @@ const firestoreDBClusters = firebase.firestore().collection('clusters');
 const firestoreDBAssemblyPoints = firebase.firestore().collection('assemblypoints');
 const firestoreCache = new FirestoreCache();
 
-const assemblyPoints = new Map<String, { name: string, coordinates: { latitude: number, longitude: number} }>();
+const assemblyPoints = new Map<String, { name: string, coordinates: { latitude: number, longitude: number}, available: [string] }>();
 // Fetch current locations from Realtime Database every 2 sec.
 firestoreDBAssemblyPoints.get().then(snapshot => {
     snapshot.forEach(doc => {
-        assemblyPoints.set(doc.id, doc.data() as { name: string, coordinates: { latitude: number, longitude: number} });
+        assemblyPoints.set(doc.id, doc.data() as { name: string, coordinates: { latitude: number, longitude: number}, available: [string] });
     });
+    for(const [aId, a] of assemblyPoints) {
+        const nextAPs: { [id: string]: {}} = {};
+        a.available.forEach(nextAP => {
+            nextAPs[nextAP] = {
+                'abc': { duration: 60, timestamp: 1593869655 },
+                'def': { duration: 120, timestamp: 1593869745 },
+                'ghi': { duration: 300, timestamp: 1593880375 }
+            };
+        });
+        firebase.database().ref(`assemblyPoints/${aId}`).set(nextAPs);
+    }
+    // TODO: use listener instead to reduce downloads on RTDB
     setInterval(() => {
         realtimeDB.once('value').then(snapshot => runClustering(snapshot));
     }, 2000);
