@@ -13,6 +13,7 @@ realtimeDB.once('value', snapshot => {
     snapshot.forEach(apSnapshot => {
         apSnapshot.forEach(nextAPSnapshot => {
             nextAPSnapshot.forEach(cyclist => {
+                if(cyclist.key === '__DUMMY__') return;
                 const duration = cyclist.child('duration').val();
                 const timestamp = cyclist.child('timestamp').val();
                 if (timestamp + duration + graceTime < currentTime) {

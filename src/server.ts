@@ -26,6 +26,7 @@ firestoreDBAssemblyPoints.get().then(snapshot => {
         const nextAPs: { [id: string]: {}} = {};
         a.available.forEach(nextAP => {
             nextAPs[nextAP] = {
+                '__DUMMY__': { ignore: 'me' },
                 'abc': { duration: 60, timestamp: 1593869655 },
                 'def': { duration: 120, timestamp: 1593869745 },
                 'ghi': { duration: 300, timestamp: 1593880375 }
