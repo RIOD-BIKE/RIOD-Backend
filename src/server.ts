@@ -56,10 +56,6 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
     let writesUser = 0;
 
     // console.log(util.inspect(cyclists, false, null));
-
-    for (const [cIdx, c] of clusters) {
-        if(firestoreCache.writeCluster(c)) writesCluster++;
-    }
     for (const cyclist of cyclists.features) {
         const userId = cyclist.properties?.['userId'] as string;
         const activeCluster = (cyclist.properties?.['dbscan'] === PointType.core) ? firestoreDBClusters.doc(cyclist.properties?.['cluster'].toString()) : null;
@@ -74,6 +70,9 @@ async function runClustering(snapshot: firebase.database.DataSnapshot) {
 
         const user = new User(userId, activeCluster, nearbyClusters, nearbyAssemblyPoints);
         if(firestoreCache.writeUser(user)) writesUser++;
+    }
+    for (const [cIdx, c] of clusters) {
+        if(firestoreCache.writeCluster(c)) writesCluster++;
     }
     printOutput(clusters, writesCluster, writesUser);
 }
