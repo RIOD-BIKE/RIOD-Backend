@@ -1,7 +1,7 @@
 import { Cluster } from './models/Cluster';
 import { User } from './models/User';
 import Tree from 'splaytree';
-import firebase from 'firebase';
+import * as firebase from 'firebase-admin';
 
 export class FirestoreCache {
     private users: Tree<string, User>;

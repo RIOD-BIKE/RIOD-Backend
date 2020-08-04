@@ -1,16 +1,17 @@
 import { Cluster } from './models/Cluster';
 import { FirestoreCache } from './FirestoreCache';
-import * as firebase from 'firebase/app';
-import 'firebase/database'
-import 'firebase/firestore'
+import * as admin from 'firebase-admin';
 import { point, FeatureCollection, Point } from '@turf/helpers';
-import { firebaseConfig } from './environment';
 import util from 'util';
 import { DBSCAN, PointType } from './dbscan/dbscan';
 import { distance } from 'geokdbush';
 import { User } from './models/User';
 
-firebase.initializeApp(firebaseConfig);
+// firebase.initializeApp(firebaseConfig);
+const firebase = admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: 'https://riod-bike.firebaseio.com'
+});
 const realtimeDB = firebase.database().ref();
 const firestoreDBClusters = firebase.firestore().collection('clusters');
 const firestoreDBAssemblyPoints = firebase.firestore().collection('assemblypoints');
@@ -40,7 +41,7 @@ firestoreDBAssemblyPoints.get().then(snapshot => {
     }, 2000);
 });
 
-async function runClustering(snapshot: firebase.database.DataSnapshot) {
+async function runClustering(snapshot: admin.database.DataSnapshot) {
     const points: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
     const users = snapshot.child('users');
     users.forEach(user => {

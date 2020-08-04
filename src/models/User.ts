@@ -1,11 +1,11 @@
 export class User {
     public userId: string;
-    public activeCluster: firebase.firestore.DocumentReference | null;
-    public clusters: firebase.firestore.DocumentReference[];
-    public assemblyPoints: firebase.firestore.DocumentReference[];
+    public activeCluster: FirebaseFirestore.DocumentReference | null;
+    public clusters: FirebaseFirestore.DocumentReference[];
+    public assemblyPoints: FirebaseFirestore.DocumentReference[];
 
-    constructor(userId: string, activeCluster: firebase.firestore.DocumentReference | null,
-        clusters: firebase.firestore.DocumentReference[], assemblyPoints: firebase.firestore.DocumentReference[]) {
+    constructor(userId: string, activeCluster: FirebaseFirestore.DocumentReference | null,
+        clusters: FirebaseFirestore.DocumentReference[], assemblyPoints: FirebaseFirestore.DocumentReference[]) {
         this.userId = userId;
 
         this.activeCluster = activeCluster;
