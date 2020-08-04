@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "GOOGLE_APPLICATION_CREDENTIALS='/home/riod/bin/RIOD-Backend/service-account-file.json' node dist/server.js",
     "test": "ava --verbose"
   },
   "repository": {
