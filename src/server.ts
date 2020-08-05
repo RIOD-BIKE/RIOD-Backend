@@ -7,7 +7,6 @@ import { DBSCAN, PointType } from './dbscan/dbscan';
 import { distance } from 'geokdbush';
 import { User } from './models/User';
 
-// firebase.initializeApp(firebaseConfig);
 const firebase = admin.initializeApp({
     credential: admin.credential.applicationDefault(),
     databaseURL: 'https://riod-bike.firebaseio.com'
@@ -37,13 +36,12 @@ firestoreDBAssemblyPoints.get().then(snapshot => {
     }
     // TODO: use listener instead to reduce downloads on RTDB
     setInterval(() => {
-        realtimeDB.once('value').then(snapshot => runClustering(snapshot));
+        realtimeDB.child('users').once('value').then(snapshot => runClustering(snapshot));
     }, 2000);
 });
 
-async function runClustering(snapshot: admin.database.DataSnapshot) {
+async function runClustering(users: admin.database.DataSnapshot) {
     const points: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
-    const users = snapshot.child('users');
     users.forEach(user => {
         points.features.push(point([user.child('latitude').val(), user.child('longitude').val()], {
             'userId': user.key,

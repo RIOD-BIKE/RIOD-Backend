@@ -1,9 +1,10 @@
-import { firebaseConfig } from './environment';
-import * as firebase from 'firebase/app';
-import 'firebase/database'
 import { exit } from 'process';
+import * as admin from 'firebase-admin';
 
-firebase.initializeApp(firebaseConfig);
+const firebase = admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: 'https://riod-bike.firebaseio.com'
+});
 const realtimeDB = firebase.database().ref('assemblyPoints');
 const currentTime = Math.floor(Date.now() / 1000);
 const graceTime = 20;
