@@ -76,6 +76,7 @@ export class DBSCAN {
         }
     }
 
+    // filter out neighbors that are moving in another direction
     private filterDirections(p: Feature, neigbors: FeatureCollection) {
         return featureCollection(neigbors.features.filter(f => {
             const bearing = (f.properties!['direction'] - p.properties!['direction'] + 180) % 360 - 180;

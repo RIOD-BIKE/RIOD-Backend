@@ -42,12 +42,14 @@ firestoreDBAssemblyPoints.get().then(snapshot => {
 
 async function runClustering(users: admin.database.DataSnapshot) {
     const points: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
+    // create a point for each user
     users.forEach(user => {
         points.features.push(point([user.child('latitude').val(), user.child('longitude').val()], {
             'userId': user.key,
             'direction': user.child('bearing').val()
         }));
     });
+    // instantiate & run DBSCAN
     const dbscan = new DBSCAN(points, 5, 3);
     const cyclists = dbscan.run();
     const clusters = dbscan.getClusters();
@@ -55,6 +57,7 @@ async function runClustering(users: admin.database.DataSnapshot) {
     let writesUser = 0;
 
     // console.log(util.inspect(cyclists, false, null));
+    // loop over all cyclists
     for (const cyclist of cyclists.features) {
         const userId = cyclist.properties?.['userId'] as string;
         const activeCluster = (cyclist.properties?.['dbscan'] === PointType.core) ? firestoreDBClusters.doc(cyclist.properties?.['cluster'].toString()) : null;
@@ -67,9 +70,11 @@ async function runClustering(users: admin.database.DataSnapshot) {
             .filter(([aIdx, a]) => distance(a.coordinates.latitude, a.coordinates.longitude, cyclist.geometry.coordinates[0], cyclist.geometry.coordinates[1]) < 5)
             .map(a => firestoreDBAssemblyPoints.doc(a[0].toString()));
 
+        // instantiate new User and write it to cache
         const user = new User(userId, activeCluster, nearbyClusters, nearbyAssemblyPoints);
         if(firestoreCache.writeUser(user)) writesUser++;
     }
+    // loop over all clusters & write them to cache
     for (const [cIdx, c] of clusters) {
         if(firestoreCache.writeCluster(c)) writesCluster++;
     }

@@ -10,10 +10,13 @@ export class FirestoreCache {
     private firestoreClusters = firebase.firestore().collection('clusters');
 
     constructor() {
+        // instantiate new spaytrees for faster lookups
         this.users = new Tree();
         this.clusters = new Tree();
     }
 
+    // only write user to Firestore if it has changed
+    // returns true if it has actually been written
     public writeUser(newUser: User) {
         // TODO: First-run check?
         if (!this.users.contains(newUser.userId)) {
@@ -28,7 +31,8 @@ export class FirestoreCache {
         this.users.add(newUser.userId, newUser);
         return true;
     }
-
+    // only write cluster to Firestore if it has changed
+    // returns true if it has actually been written
     public writeCluster(newCluster: Cluster) {
         // TODO: First-run check?
         if (!this.clusters.contains(newCluster.clusterId)) {
