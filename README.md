@@ -1,18 +1,17 @@
 # RIOD-Backend
 
+This is the backend for RIOD. It's responsible for clustering the cyclists based on their location using DBSCAN and bearing stored in Cloud Firestore. It also determines which other Clusters and Assembly Points are visible to each cyclist. This repo also contains a Garbage Collector auto automatically remove outdated entries from Realtime Database.
+
 ## Setup
-0. Node.js und npm installieren
-1. Die [Firebase Console öffnen](https://console.firebase.google.com)
-2. `riod bike` auswählen
-3. Links oben aufs Zahnrad, Projekteinstellungen klicken
-4. Unten bei `Firebase SDK snippet` `Konfiguration` wählen
-5. Code Snippet mit vorangestelltem `export` in `src/environment.ts` schreiben, also
+1. Install Node.js and npm
+2. Open [Firebase Console öffnen](https://console.firebase.google.com)
+3. Click `riod bike`
+4. Click Settings, Project Settings, Service Accounts
+5. Click `Generate New Private Key`, optional: remove old service accounts (if any) in GCP
+6. Save the config and place it directory of your choice
+7. Set enviroment variable `GOOGLE_APPLICATION_CREDENTIALS` to the keys path, e.g. `export GOOGLE_APPLICATION_CREDENTIALS=/Users/foo/bar/riod-bike-firebase-adminsdk-1337.json`
+8. Run `npm install` to install dependencies
+9. Transpile with `npx tsc`
 
-    `export const firebaseConfig = { apiKey: [...]`
-6. `npm install` ausführen (Installation von Dependencies)
-7. Transpilieren mit `tsc`
-8. Starten mit `node dist/server.js`
-
-## Sonstiges
-
-In `riod-bike-export.json` sind Demodaten mit Positionen. Die ersten 5 sind in einem Abstand von unter 5 Meter, der 6. ist knapp 30m entfernt.
+## Run
+Run server with `node dist/server.js` and run Garbage Collector with `node dist/garbageCollector.js` (ideally setup a cronjob)
